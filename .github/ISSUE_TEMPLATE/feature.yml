@@ -1,0 +1,25 @@
+name: Feature
+description: Propose a user behavior with acceptance criteria
+title: "[Feature]: "
+labels: ["feature"]
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User outcome
+      description: What can the user accomplish when this is complete?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance scenarios
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety, permissions, and privacy impact
+    validations:
+      required: true
+

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Request feedback · VDanceHub{% endblock %}
+{% block content %}
+  <h1>Request dance feedback</h1>
+  <div class="notice"><strong>Unlisted by default.</strong> Anyone with the link may view it. VDanceHub does not host the video or override the provider's access settings.</div>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create unlisted request</button>
+  </form>
+{% endblock %}
+

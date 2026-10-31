@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ feedback_request.title }} · VDanceHub{% endblock %}
+{% block content %}
+  <p class="notice">This request is {{ feedback_request.video.get_visibility_display|lower }}. Anyone with the link can view this page.</p>
+  <h1>{{ feedback_request.title }}</h1>
+  <p><strong>Goals:</strong> {{ feedback_request.goals }}</p>
+  <p><strong>Level and role:</strong> {{ feedback_request.get_skill_level_display }} · {{ feedback_request.get_dancer_role_display }}</p>
+  <p><strong>Video attribution:</strong> {{ feedback_request.video.attribution_name }}</p>
+  <p>{{ feedback_request.video.description }}</p>
+  <p><a href="{{ feedback_request.video.canonical_url }}" rel="noopener noreferrer nofollow">Open video on {{ feedback_request.video.get_provider_display }}</a></p>
+{% endblock %}
+

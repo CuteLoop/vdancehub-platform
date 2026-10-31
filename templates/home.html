@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}VDanceHub · Explore the dance commons{% endblock %}
+{% block content %}
+  <h1>Explore the dance commons</h1>
+  <p>Turn dance questions and feedback into knowledge, mentorship, and stronger local communities.</p>
+  <div class="grid">
+    <section class="card"><h2>Discuss</h2><p>Ask questions and exchange experience.</p></section>
+    <section class="card"><h2>Get Feedback</h2><p>Request constructive, timestamped video critique.</p><a href="{% url 'feedback:create' %}">Start a request</a></section>
+    <section class="card"><h2>Explore</h2><p>Find movements, tutorials, music, and guides.</p></section>
+    <section class="card"><h2>Find Mentors</h2><p>Discover instructor-owned learning offers.</p></section>
+    <section class="card"><h2>Collaborate</h2><p>Build public projects and community lessons.</p></section>
+    <section class="card"><h2>Find Community</h2><p>Connect with scenes across cities.</p></section>
+  </div>
+{% endblock %}
+
