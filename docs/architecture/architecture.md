@@ -34,6 +34,15 @@ Public content may link only public video references. Promoting an unlisted refe
 explicit owner action. Withdrawal removes viewing immediately; downstream content shows an unavailable
 reference rather than copying the URL.
 
+## Knowledge-reference boundary
+
+Discussion and movement citations are structured records, not auto-linked body text. URL validation
+parses the scheme, credentials, port, IDNA hostname, provider-specific path, and tracking parameters.
+Known-provider lookalike hostnames are rejected. The application does not fetch previews or follow
+redirects. Supported Instagram and YouTube paths and a small exact domain allowlist may be linked
+directly; other HTTPS references require moderation. Rendered user-generated links use
+`noopener noreferrer nofollow ugc`.
+
 ## Search and discovery
 
 PostgreSQL full-text search will produce a typed union of public discussions, guides, projects,

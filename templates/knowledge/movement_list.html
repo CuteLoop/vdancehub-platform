@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Bachata movement knowledge · VDanceHub{% endblock %}
+{% block content %}
+  <p class="eyebrow">Explore</p>
+  <h1>Bachata movement knowledge</h1>
+  <p>A living map of movements, terminology, components, prerequisites, and source discussions.</p>
+
+  <form class="filter-form" method="get" role="search">
+    <label for="movement-search">Search names and aliases</label>
+    <input id="movement-search" name="q" value="{{ query }}" placeholder="Try hammerlock, mambo, or caricia">
+    <label for="difficulty">Difficulty</label>
+    <select id="difficulty" name="difficulty">
+      <option value="">All levels and concepts</option>
+      {% for level in "123456" %}<option value="{{ level }}"{% if difficulty == level %} selected{% endif %}>Level {{ level }}</option>{% endfor %}
+    </select>
+    <button type="submit">Apply filters</button>
+  </form>
+
+  <nav class="filter-bar" aria-label="Movement categories">
+    <a class="chip{% if not category %} active{% endif %}" href="{% url 'knowledge:movement-list' %}">All</a>
+    <a class="chip{% if category == 'footwork' %} active{% endif %}" href="?category=footwork">Footwork</a>
+    <a class="chip{% if category == 'sensual' %} active{% endif %}" href="?category=sensual">Sensual</a>
+    <a class="chip{% if category == 'spectacular' %} active{% endif %}" href="?category=spectacular">Spectacular</a>
+    <a class="chip{% if category == 'acrobatics' %} active{% endif %}" href="?category=acrobatics">Acrobatics</a>
+  </nav>
+
+  <div class="movement-grid">
+    {% for movement in movements %}
+      <article class="movement-card{% if movement.is_concept %} concept{% endif %}">
+        <div class="chip-row">
+          {% if movement.is_concept %}<span class="kind-badge">Concept</span>{% elif movement.difficulty %}<span class="kind-badge">Level {{ movement.difficulty }}</span>{% endif %}
+          {% for tag in movement.tags.all %}<span class="meta-chip">{{ tag.name }}</span>{% endfor %}
+        </div>
+        <h2><a href="{% url 'knowledge:movement-detail' movement.slug %}">{{ movement.name }}</a></h2>
+        <p>{{ movement.summary|truncatewords:22 }}</p>
+        {% if movement.source_catalog %}<small>{{ movement.source_catalog }} #{{ movement.source_identifier }}</small>{% endif %}
+      </article>
+    {% empty %}
+      <div class="empty-state"><h2>No movements match.</h2><p>Try a broader search or filter.</p></div>
+    {% endfor %}
+  </div>
+{% endblock %}

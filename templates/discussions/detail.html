@@ -20,7 +20,25 @@
             <span class="avatar" aria-hidden="true">{{ post.author.display_name|first|upper }}</span>
             <div><strong>{{ post.author.display_name }}</strong><br><small>{{ post.created_at|date:"M j, Y · g:i A" }}</small></div>
           </div>
-          <div class="post-body">{{ post.body|urlize|linebreaksbr }}</div>
+          <div class="post-body">
+            {{ post.body|linebreaksbr }}
+            {% if post.citations.all %}
+              <ol class="reference-list" aria-label="References">
+                {% for citation in post.citations.all %}
+                  <li>
+                    <strong>{{ citation.reference.get_provider_display }}</strong>
+                    <span class="reference-status">{{ citation.reference.get_validation_status_display }}</span><br>
+                    {{ citation.reference.title }} · {{ citation.reference.attribution_name }}<br>
+                    {% if citation.reference.is_clickable %}
+                      <a href="{{ citation.reference.canonical_url }}" target="_blank" rel="noopener noreferrer nofollow ugc">{{ citation.reference.hostname }} ↗</a>
+                    {% else %}
+                      <span title="This destination must be reviewed before it becomes clickable.">{{ citation.reference.hostname }} · awaiting review</span>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ol>
+            {% endif %}
+          </div>
         </article>
       {% endif %}
     {% endfor %}

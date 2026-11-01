@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ movement.name }} · VDanceHub{% endblock %}
+{% block content %}
+  <p><a href="{% url 'knowledge:movement-list' %}">← Movement knowledge</a></p>
+  <div class="knowledge-heading">
+    <div class="chip-row">
+      {% if movement.is_concept %}<span class="kind-badge">Concept</span>{% elif movement.difficulty %}<span class="kind-badge">Level {{ movement.difficulty }}</span>{% endif %}
+      {% for tag in movement.tags.all %}<span class="meta-chip">{{ tag.name }}</span>{% endfor %}
+    </div>
+    <h1>{{ movement.name }}</h1>
+    <p>{{ movement.summary }}</p>
+    {% if movement.name_aliases.all %}
+      <p><strong>Also called:</strong> {% for alias in movement.name_aliases.all %}{{ alias.name }}{% if alias.school_or_region %} <small>({{ alias.school_or_region }})</small>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+    {% endif %}
+  </div>
+
+  <div class="knowledge-columns">
+    <section>
+      <h2>Relationship graph</h2>
+      <ul class="relationship-list">
+        {% for relation in movement.outgoing_relationships.all %}
+          <li><span class="relation-kind">{{ relation.get_kind_display }}</span> <a href="{% url 'knowledge:movement-detail' relation.to_movement.slug %}">{{ relation.to_movement.name }}</a> <span class="reference-status">{{ relation.get_status_display }} · {{ relation.get_provenance_display }}</span></li>
+        {% empty %}<li>No outgoing relationships have been proposed.</li>{% endfor %}
+      </ul>
+      {% if movement.incoming_relationships.all %}
+        <h3>Used by or related from</h3>
+        <ul class="relationship-list">
+          {% for relation in movement.incoming_relationships.all %}
+            <li><a href="{% url 'knowledge:movement-detail' relation.from_movement.slug %}">{{ relation.from_movement.name }}</a> <span class="relation-kind">{{ relation.get_kind_display }}</span></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </section>
+
+    <aside>
+      <h2>Sources</h2>
+      <ol class="reference-list">
+        {% for reference in movement.references.all %}
+          <li><strong>{{ reference.title }}</strong><br>{{ reference.attribution_name }}<br><span class="reference-status">{{ reference.get_validation_status_display }}</span><br>{% if reference.is_clickable %}<a href="{{ reference.canonical_url }}" target="_blank" rel="noopener noreferrer nofollow ugc">{{ reference.hostname }} ↗</a>{% else %}<span>{{ reference.hostname }} · awaiting review</span>{% endif %}</li>
+        {% empty %}<li>No source has been attached.</li>{% endfor %}
+      </ol>
+      {% if movement.discussion and movement.discussion.native_topic %}<a class="button" href="{% url 'discussions:detail' movement.discussion.native_topic.pk %}">Discuss this movement</a>{% endif %}
+    </aside>
+  </div>
+{% endblock %}

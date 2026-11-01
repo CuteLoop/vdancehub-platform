@@ -12,6 +12,7 @@
       <nav>
         <a href="/"><strong>VDanceHub</strong></a>
         <a href="{% url 'discussions:list' %}?style=bachata&amp;tag=move">Discuss</a>
+        <a href="{% url 'knowledge:movement-list' %}">Knowledge</a>
         <a href="{% url 'feedback:create' %}">Get feedback</a>
         {% if user.is_authenticated %}
           <span>{{ user.display_name }}</span>

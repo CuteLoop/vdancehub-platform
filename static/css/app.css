@@ -38,10 +38,29 @@ button, .button { display: inline-block; margin-top: 1rem; padding: .7rem 1rem; 
 .reply-panel { margin-top: 1.5rem; border-radius: .85rem; padding: 1rem; background: #f8f1f8; }
 .form-help { color: #725f78; font-size: .85rem; }
 .empty-state { border: 1px dashed #cdb8d2; border-radius: .85rem; padding: 2rem; text-align: center; }
+.filter-form { display: grid; grid-template-columns: minmax(14rem, 1fr) minmax(10rem, .35fr) auto; gap: .75rem; align-items: end; margin: 1rem 0; }
+.filter-form label { margin: 0; }
+.filter-form label:first-child { grid-column: 1; }
+.filter-form input { grid-column: 1; }
+.filter-form label[for=difficulty] { grid-column: 2; grid-row: 1; }
+.filter-form select { grid-column: 2; grid-row: 2; }
+.filter-form button { grid-column: 3; grid-row: 2; margin: 0; }
+.movement-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1rem; }
+.movement-card { border: 1px solid #e5d9e9; border-radius: .85rem; padding: 1rem; background: white; }
+.movement-card.concept { border-color: #c9afd0; background: #fbf7fc; }
+.movement-card h2 { margin: .6rem 0 .35rem; font-size: 1.15rem; }
+.movement-card h2 a { color: #33213c; text-decoration: none; }
+.knowledge-columns { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(16rem, .7fr); gap: 1.5rem; }
+.knowledge-columns aside { border-radius: .85rem; padding: 1rem; background: #f8f1f8; }
+.relationship-list, .reference-list { padding-left: 1.4rem; }
+.relationship-list li, .reference-list li { margin: .7rem 0; }
+.relation-kind, .reference-status { border-radius: .3rem; padding: .15rem .35rem; color: #67536e; background: #efe4f2; font-size: .76rem; }
 @media (max-width: 38rem) {
   header, main, footer { padding: .85rem; }
   header nav { justify-content: flex-start; }
   header nav a:first-child { width: 100%; }
   .post { grid-template-columns: 1fr; }
   .topic-card { align-items: flex-start; }
+  .filter-form, .knowledge-columns { display: block; }
+  .filter-form input, .filter-form select, .filter-form button { margin-top: .35rem; }
 }

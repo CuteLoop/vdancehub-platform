@@ -40,6 +40,16 @@ python -m venv .venv
 The health endpoint is `http://localhost:8000/health/` after running
 `.venv/bin/python manage.py runserver`.
 
+To load the bounded Bachata knowledge demonstration, run:
+
+```bash
+.venv/bin/python manage.py seed_bachata_demo
+```
+
+Then open `http://localhost:8000/knowledge/moves/`. The seed creates 37 attributed catalog
+records, ten normalized concepts, linked discussions, and proposed relationships for community
+review. See the [data provenance notes](docs/data-provenance.md) before expanding the import.
+
 ## Safety boundary
 
 The alpha is for adults aged 18 and over. Feedback videos are unlisted by default, but “unlisted”

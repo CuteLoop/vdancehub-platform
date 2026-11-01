@@ -3,8 +3,8 @@
 ## Identity and location
 
 `User` uses a UUID primary key and unique email for authentication. Display names may be pseudonyms.
-Spirit requires a unique username field, so each account receives an opaque `member-<random>` forum
-handle; it is not a verified identity and is not used for login.
+Each account also receives an opaque `member-<random>` internal handle; it is not a verified identity
+and is not used for login.
 Only country code, region, and city are accepted for member location. A separate `Community` represents
 a public local scene.
 
@@ -35,6 +35,17 @@ unverified.
 Knowledge pages have owners and named contributors. Content lives in immutable revisions with edit
 summaries. Projects have contributors, discussions, video references, and milestones. Application
 services prevent an unlisted video from being attached to public knowledge.
+
+`Movement` stores a normalized knowledge node or an attributed catalog record. `MovementAlias`
+records school, language, or regional names without forcing one vocabulary. `MovementRelationship`
+connects prerequisites, components, variations, and related movements. Every edge records provenance
+and a status of proposed, community accepted, or disputed; imported and name-inferred edges never
+silently become facts.
+
+`SourceReference` stores the submitted and canonical URL, exact hostname, provider classification,
+attribution, and moderation status. `PostCitation` gives references a stable number within a post.
+Only exact supported-provider or allowlisted domains are immediately clickable; other safe HTTPS
+destinations remain visible but unclickable until staff review.
 
 ## Moderation
 

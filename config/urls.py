@@ -15,5 +15,6 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("discussions/", include("apps.discussions.urls")),
     path("feedback/", include("apps.feedback.urls")),
+    path("knowledge/", include("apps.knowledge.urls")),
     path("health/", health, name="health"),
 ]
