@@ -7,3 +7,10 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "local-development-only")
 ALLOWED_HOSTS = [
     host for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if host
 ]
+
+# Development servers should serve source static assets directly. Production
+# keeps the compressed manifest backend configured in production.py.
+STORAGES = {  # noqa: F405
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
