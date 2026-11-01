@@ -24,3 +24,17 @@ def create_topic_with_first_post(
         author=author,
     )
     return thread_ref
+
+
+@transaction.atomic
+def create_reply(*, topic: DiscussionTopic, author: User, body: str) -> DiscussionPost:
+    post = DiscussionPost.objects.create(topic=topic, author=author, body=body)
+    thread_ref = topic.domain_ref
+    DiscussionPostRef.objects.create(
+        thread=thread_ref,
+        backend_id=str(post.pk),
+        native_post=post,
+        author=author,
+    )
+    topic.save(update_fields=["updated_at"])
+    return post

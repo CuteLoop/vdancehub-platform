@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Discussions · VDanceHub{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Dance commons</p>
+      <h1>Bachata movement discussions</h1>
+      <p>Compare terminology, add technique context, and trace ideas back to their sources.</p>
+    </div>
+  </div>
+
+  <nav class="filter-bar" aria-label="Discussion filters">
+    <a class="chip{% if not selected_style and not selected_tag %} active{% endif %}" href="{% url 'discussions:list' %}">All</a>
+    <a class="chip{% if selected_style == 'bachata' and selected_tag == 'move' %} active{% endif %}" href="{% url 'discussions:list' %}?style=bachata&amp;tag=move">Bachata moves</a>
+    <a class="chip{% if selected_tag == 'footwork' %} active{% endif %}" href="{% url 'discussions:list' %}?style=bachata&amp;tag=footwork">Footwork</a>
+  </nav>
+
+  <div class="topic-list">
+    {% for topic in topics %}
+      <article class="topic-card">
+        <div class="topic-card-main">
+          <div class="chip-row">
+            <span class="kind-badge">{{ topic.get_kind_display }}</span>
+            {% for style in topic.dance_styles.all %}<span class="meta-chip">{{ style.name }}</span>{% endfor %}
+            {% for tag in topic.tags.all %}<span class="meta-chip">{{ tag.name }}</span>{% endfor %}
+          </div>
+          <h2><a href="{% url 'discussions:detail' topic.pk %}">{{ topic.title }}</a></h2>
+          <p class="topic-meta">Started by {{ topic.author.display_name }} · {{ topic.created_at|date:"M j, Y" }}</p>
+        </div>
+        <div class="reply-count" aria-label="{{ topic.reply_count }} replies">
+          <strong>{{ topic.reply_count }}</strong><span>repl{{ topic.reply_count|pluralize:"y,ies" }}</span>
+        </div>
+      </article>
+    {% empty %}
+      <div class="empty-state"><h2>No discussions match these filters.</h2><p>Try another view.</p></div>
+    {% endfor %}
+  </div>
+{% endblock %}

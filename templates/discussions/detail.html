@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ topic.title }} · VDanceHub{% endblock %}
+{% block content %}
+  <p><a href="{% url 'discussions:list' %}?style=bachata&amp;tag=move">← Bachata moves</a></p>
+  <header class="discussion-heading">
+    <div class="chip-row">
+      <span class="kind-badge">{{ topic.get_kind_display }}</span>
+      {% for style in topic.dance_styles.all %}<span class="meta-chip">{{ style.name }}</span>{% endfor %}
+      {% for tag in topic.tags.all %}<span class="meta-chip">{{ tag.name }}</span>{% endfor %}
+    </div>
+    <h1>{{ topic.title }}</h1>
+    <p class="topic-meta">Started by {{ topic.author.display_name }} · {{ topic.created_at|date:"M j, Y" }}</p>
+  </header>
+
+  <section class="post-list" aria-label="Discussion posts">
+    {% for post in topic.posts.all %}
+      {% if not post.is_removed %}
+        <article class="post" id="post-{{ post.pk }}">
+          <div class="post-author">
+            <span class="avatar" aria-hidden="true">{{ post.author.display_name|first|upper }}</span>
+            <div><strong>{{ post.author.display_name }}</strong><br><small>{{ post.created_at|date:"M j, Y · g:i A" }}</small></div>
+          </div>
+          <div class="post-body">{{ post.body|urlize|linebreaksbr }}</div>
+        </article>
+      {% endif %}
+    {% endfor %}
+  </section>
+
+  <section class="reply-panel" aria-labelledby="reply-heading">
+    <h2 id="reply-heading">Join the discussion</h2>
+    {% if topic.is_closed %}
+      <p class="notice">This discussion is closed to new replies.</p>
+    {% elif user.is_authenticated %}
+      {% if user.adult_confirmed_at %}
+        <form method="post" action="{% url 'discussions:reply' topic.pk %}">
+          {% csrf_token %}
+          {{ reply_form.as_p }}
+          <p class="form-help">Be constructive. Credit teachers and creators when sharing their terminology.</p>
+          <button type="submit">Post reply</button>
+        </form>
+      {% else %}
+        <p class="notice">Adult confirmation is required before posting.</p>
+      {% endif %}
+    {% else %}
+      <p><a class="button" href="{% url 'account_login' %}?next={{ request.path|urlencode }}">Log in to reply</a></p>
+    {% endif %}
+  </section>
+{% endblock %}

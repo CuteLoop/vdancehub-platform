@@ -17,10 +17,18 @@ class DiscussionTopic(models.Model):
     )
     title = models.CharField(max_length=180)
     kind = models.CharField(max_length=20, choices=Kind.choices)
+    dance_styles = models.ManyToManyField("taxonomy.DanceStyle", blank=True, related_name="topics")
+    tags = models.ManyToManyField("taxonomy.Tag", blank=True, related_name="topics")
     is_closed = models.BooleanField(default=False)
     is_removed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+
+    def __str__(self) -> str:
+        return self.title
 
 
 class DiscussionPost(models.Model):
@@ -33,6 +41,9 @@ class DiscussionPost(models.Model):
     is_removed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["created_at"]
 
 
 class DiscussionThreadRef(models.Model):
