@@ -7,9 +7,10 @@ secret store. Never commit real credentials or copy production data into develop
 
 ## Deployment
 
-Build the Docker image, run migrations as a release command, collect static files, run deployment
-checks, then start Gunicorn. Health monitoring uses `/health/`; it must later gain dependency-aware
-readiness without leaking configuration.
+Railway detects the root Dockerfile. `railway.toml` runs migrations as an isolated pre-deploy command,
+then starts Gunicorn using the Docker image command. The configured `/health/` deployment check must
+return `2xx` before Railway activates a release; it must later gain dependency-aware readiness without
+leaking configuration.
 
 ## Backups and recovery
 

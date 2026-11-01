@@ -7,6 +7,8 @@ from .base import *  # noqa: F403
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 ALLOWED_HOSTS = [host for host in os.environ["ALLOWED_HOSTS"].split(",") if host]
+if "healthcheck.railway.app" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("healthcheck.railway.app")
 DATABASES = {"default": dj_database_url.config(conn_max_age=600, conn_health_checks=True)}  # noqa: F405
 CACHES: Any = {  # type: ignore[no-redef]
     "default": {
