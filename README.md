@@ -21,7 +21,8 @@ Mentors**, **Collaborate**, and **Find Community**. The defining alpha journey i
 - Test-driven development with pytest
 
 See [architecture](docs/architecture/architecture.md), [security and privacy](docs/security/threat-model.md),
-the [delivery plan](docs/delivery/implementation-plan.md), and the demo import
+the [delivery plan](docs/delivery/implementation-plan.md), the current
+[MVP progress audit](docs/delivery/progress-audit.md), and the demo import
 [data provenance](docs/data-provenance.md).
 
 ## Local development

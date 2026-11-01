@@ -1,5 +1,8 @@
 # TDD implementation plan
 
+Current implementation progress and the evidence behind it are tracked in the
+[MVP progress audit](progress-audit.md).
+
 Codex is the main implementer. Work in small behavior-focused branches and use red-green-refactor:
 first add a failing test, implement the smallest passing behavior, then refactor without weakening the
 assertion. Every pull request identifies permission/threat impact, migrations, tests, and rollback.
