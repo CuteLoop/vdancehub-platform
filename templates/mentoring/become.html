@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Mentor profile · VDanceHub{% endblock %}
+{% block content %}
+  <section class="form-shell">
+    <p class="eyebrow">Instructor Studio</p>
+    <h1>Build your mentor profile</h1>
+    <p>Describe the guidance you offer. Publishing makes this profile visible in the mentor directory.</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Save mentor profile</button>
+    </form>
+  </section>
+{% endblock %}

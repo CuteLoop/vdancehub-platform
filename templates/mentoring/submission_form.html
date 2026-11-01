@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Submit practice · VDanceHub{% endblock %}
+{% block content %}
+  <section class="form-shell">
+    <p><a href="{% url 'mentoring:assignment-detail' assignment.pk %}">← {{ assignment.template.title }}</a></p>
+    <p class="eyebrow">Private progress submission</p>
+    <h1>Share your practice</h1>
+    <div class="notice"><strong>Your video stays on its original service.</strong> Use a supported YouTube or Instagram URL. An unlisted link is not truly private—anyone with the URL may be able to watch it.</div>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Send to instructor</button></form>
+  </section>
+{% endblock %}

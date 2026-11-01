@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.professional_name }} · Dance mentor{% endblock %}
+{% block content %}
+  <p><a href="{% url 'mentoring:directory' %}">← All mentors</a></p>
+  <section class="mentor-profile-heading">
+    <div>
+      <p class="eyebrow">Dance mentor</p>
+      <h1>{{ profile.professional_name }}</h1>
+      <p>{{ profile.biography|linebreaksbr }}</p>
+      <div class="chip-row">
+        {% for language in profile.languages %}<span class="meta-chip">{{ language }}</span>{% endfor %}
+        {% if profile.remote_available %}<span class="meta-chip">Remote lessons</span>{% endif %}
+        {% for specialty in profile.specialties.all %}<span class="meta-chip">{{ specialty.name }}</span>{% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <div class="mentor-profile-layout">
+    <section>
+      <p class="eyebrow">Practice library</p>
+      <h2>Open exercises</h2>
+      <div class="practice-list">
+        {% for practice in profile.practice_templates.all %}
+          {% if practice.is_public %}
+            <article class="practice-card">
+              <div><span class="status-pill">{{ practice.estimated_minutes }} minutes</span></div>
+              <h3>{{ practice.title }}</h3>
+              <p><strong>Learning goal</strong><br>{{ practice.objective }}</p>
+              <details><summary>Practice instructions</summary>{{ practice.instructions|linebreaks }}</details>
+              {% if practice.linked_pages.all %}
+                <p><strong>Linked knowledge</strong><br>
+                  {% for page in practice.linked_pages.all %}<a href="{% url 'knowledge:page-detail' page.slug %}">{{ page.title }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}
+                </p>
+              {% endif %}
+            </article>
+          {% endif %}
+        {% empty %}<p>No open exercises have been published yet.</p>{% endfor %}
+      </div>
+    </section>
+
+    <aside class="offer-panel">
+      <p class="eyebrow">Mentoring services</p>
+      <h2>Ways to work together</h2>
+      {% for offer in profile.offers.all %}
+        {% if offer.is_active %}
+          <article class="offer-card">
+            <h3>{{ offer.title }}</h3>
+            <p>{{ offer.description }}</p>
+            <p><strong>{{ offer.included_reviews }} review{{ offer.included_reviews|pluralize }}</strong> · Expected within {{ offer.turnaround_days }} days</p>
+            {% if offer.price_amount %}<p>{{ offer.price_currency }} {{ offer.price_amount }}</p>{% endif %}
+            {% if offer.booking_link.status == "approved" %}
+              <a class="button" href="{{ offer.booking_link.url }}" target="_blank" rel="noopener noreferrer nofollow ugc">Book with instructor ↗</a>
+            {% else %}
+              <p class="form-help">Booking link awaiting safety review.</p>
+            {% endif %}
+          </article>
+        {% endif %}
+      {% empty %}<p>This mentor has not published a service offer yet.</p>{% endfor %}
+      <p class="form-help">Bookings and payments happen on the instructor's external service. VDanceHub does not verify payment.</p>
+    </aside>
+  </div>
+{% endblock %}

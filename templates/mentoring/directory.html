@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Dance mentors · VDanceHub{% endblock %}
+{% block content %}
+  <section class="mentor-hero">
+    <div>
+      <p class="eyebrow">Practice with guidance</p>
+      <h1>Find a dance mentor</h1>
+      <p>Work with an instructor between lessons through focused practice, private video feedback, and a progress history you keep.</p>
+    </div>
+    {% if user.is_authenticated %}<a class="button secondary-button" href="{% url 'mentoring:become' %}">Become a mentor</a>{% endif %}
+  </section>
+
+  {% if profiles %}
+    <div class="mentor-grid">
+      {% for profile in profiles %}
+        <article class="mentor-card">
+          <p class="eyebrow">Dance mentor</p>
+          <h2><a href="{% url 'mentoring:profile' profile.slug %}">{{ profile.professional_name }}</a></h2>
+          <p>{{ profile.biography|truncatewords:35 }}</p>
+          <div class="chip-row">
+            {% for language in profile.languages %}<span class="meta-chip">{{ language }}</span>{% endfor %}
+            {% if profile.remote_available %}<span class="meta-chip">Remote available</span>{% endif %}
+          </div>
+          {% with public_practice=profile.practice_templates.all %}
+            {% if public_practice %}
+              <h3>Open practice</h3>
+              <ul class="compact-list">
+                {% for practice in public_practice %}{% if practice.is_public %}<li>{{ practice.title }} · {{ practice.estimated_minutes }} min</li>{% endif %}{% endfor %}
+              </ul>
+            {% endif %}
+          {% endwith %}
+          <a class="text-link" href="{% url 'mentoring:profile' profile.slug %}">View mentoring profile →</a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <section class="empty-state">
+      <h2>The mentor directory is opening soon</h2>
+      <p>No instructor has published a profile yet. Instructors can start building reusable practice and private feedback workflows now.</p>
+      {% if user.is_authenticated %}<a class="button" href="{% url 'mentoring:become' %}">Create the first mentor profile</a>{% endif %}
+    </section>
+  {% endif %}
+{% endblock %}

@@ -113,6 +113,44 @@ button, .button { display: inline-block; margin-top: 1rem; padding: .7rem 1rem; 
 .community-conversations { margin-top: 2rem; border-top: 1px solid #e3d6e7; padding-top: 1.25rem; }
 .edition-heading .notice { margin-top: 1.5rem; }
 .edition-credits { margin: 1rem auto 3rem; border-top: 1px solid #e3d6e7; padding-top: 1rem; }
+.mentor-hero, .studio-heading, .training-heading, .assignment-hero { margin: 1.5rem 0 2rem; border-radius: 1.2rem; padding: clamp(1.4rem, 4vw, 2.2rem); background: linear-gradient(135deg, #f9eaf1, #eeeafa); }
+.mentor-hero, .studio-heading, .assignment-hero { display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
+.mentor-hero h1, .mentor-profile-heading h1, .studio-heading h1, .training-heading h1, .assignment-hero h1 { margin: .35rem 0; font-family: Georgia, serif; font-size: clamp(2.2rem, 5vw, 4.2rem); line-height: 1; letter-spacing: -.035em; }
+.mentor-hero > div, .assignment-hero > div { max-width: 48rem; }
+.mentor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; }
+.mentor-card, .practice-card, .assignment-card, .offer-card { border: 1px solid #e3d6e7; border-radius: 1rem; padding: 1.2rem; background: white; box-shadow: 0 .6rem 1.8rem #4c23520a; }
+.mentor-card h2, .assignment-card h2 { margin: .45rem 0; font-family: Georgia, serif; }
+.mentor-card h2 a, .assignment-card h2 a { color: #382540; text-decoration: none; }
+.compact-list { padding-left: 1.2rem; }
+.mentor-profile-heading { max-width: 50rem; margin: 2rem 0; }
+.mentor-profile-layout, .assignment-layout, .review-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(17rem, .7fr); gap: 1.5rem; }
+.practice-list, .assignment-list, .review-queue { display: grid; gap: 1rem; }
+.practice-list { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+.offer-panel, .record-sidebar, .review-composer { align-self: start; border-radius: 1rem; padding: 1.2rem; background: #f6eef7; }
+.offer-card { margin: 1rem 0; box-shadow: none; }
+.form-shell { max-width: 48rem; margin: 2rem auto; border: 1px solid #e3d6e7; border-radius: 1rem; padding: clamp(1.2rem, 4vw, 2rem); background: white; }
+.form-shell h1 { font-family: Georgia, serif; font-size: clamp(2rem, 4vw, 3.2rem); }
+.studio-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0 2.5rem; }
+.stat-grid article { display: grid; border: 1px solid #e3d6e7; border-radius: 1rem; padding: 1.2rem; background: white; }
+.stat-grid strong { color: #63306b; font-family: Georgia, serif; font-size: 2.5rem; }
+.stat-grid span { color: #725f78; }
+.queue-section { margin-bottom: 3rem; }
+.review-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border: 1px solid #e3d6e7; border-radius: 1rem; padding: 1.1rem; background: white; }
+.review-row h3, .review-row p { margin: .2rem 0; }
+.assignment-list { grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); }
+.assignment-card-top { display: flex; align-items: center; justify-content: space-between; gap: .7rem; color: #725f78; font-size: .85rem; }
+.status-pill { display: inline-block; border-radius: 999px; padding: .25rem .6rem; color: #64315f; background: #f3e4ef; font-size: .78rem; font-weight: 750; }
+.status-submitted { color: #7a5316; background: #fff2cc; }
+.status-reviewed { color: #166252; background: #dff5ed; }
+.assignment-content, .review-video-panel { border: 1px solid #e3d6e7; border-radius: 1rem; padding: clamp(1.2rem, 3vw, 2rem); background: white; }
+.submission-record, .feedback-record { margin-top: 2rem; border-top: 1px solid #e3d6e7; padding-top: 1.5rem; }
+.privacy-note { border-left: 3px solid #aa739d; padding-left: .8rem; color: #68566d; font-size: .86rem; }
+.annotation-list { display: grid; gap: .65rem; padding: 0; list-style: none; }
+.annotation-list li { display: grid; grid-template-columns: 4rem 1fr; gap: .75rem; border-radius: .65rem; padding: .7rem; background: #f8f2f8; }
+.annotation-list time { color: #6a2577; font-weight: 750; }
+.next-steps { margin-top: 1.2rem; border-radius: .7rem; padding: 1rem; background: #e9f5f0; }
+.review-composer form textarea { background: white; }
 @media (max-width: 38rem) {
   header, main, footer { padding: .85rem; }
   header nav { justify-content: flex-start; }
@@ -126,4 +164,6 @@ button, .button { display: inline-block; margin-top: 1rem; padding: .7rem 1rem; 
   .curriculum-card { min-height: 0; }
   .module-card { grid-template-columns: 2.5rem 1fr; }
   .living-layout { grid-template-columns: 1fr; }
+  .mentor-hero, .studio-heading, .assignment-hero, .review-row { display: block; }
+  .mentor-profile-layout, .assignment-layout, .review-layout, .stat-grid { grid-template-columns: 1fr; }
 }

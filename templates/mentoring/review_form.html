@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Review {{ submission.student.display_name }} · VDanceHub{% endblock %}
+{% block content %}
+  <p><a href="{% url 'mentoring:studio' %}">← Review queue</a></p>
+  <section class="review-layout">
+    <article class="review-video-panel">
+      <p class="eyebrow">Student submission</p>
+      <h1>{{ submission.assignment.template.title }}</h1>
+      <p><strong>{{ submission.student.display_name }}</strong> · {{ submission.submitted_at|date:"M j, Y, g:i a" }}</p>
+      <a class="button" href="{{ submission.video.canonical_url }}" target="_blank" rel="noopener noreferrer nofollow">Open video on {{ submission.video.get_provider_display }} ↗</a>
+      <h2>Self-assessment</h2>
+      <p>{{ submission.self_assessment|linebreaksbr }}</p>
+      <p class="privacy-note">Private coaching material. Do not share without the student's separate consent.</p>
+    </article>
+    <section class="review-composer">
+      <p class="eyebrow">Instructor review</p>
+      <h2>Feedback and next practice</h2>
+      <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Complete review</button></form>
+    </section>
+  </section>
+{% endblock %}

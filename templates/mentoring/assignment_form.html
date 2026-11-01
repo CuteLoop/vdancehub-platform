@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Assign practice · VDanceHub{% endblock %}
+{% block content %}
+  <section class="form-shell">
+    <p><a href="{% url 'mentoring:studio' %}">← Instructor Studio</a></p>
+    <p class="eyebrow">Student invitation</p>
+    <h1>Assign individual practice</h1>
+    <p>The student must already have an adult VDanceHub account. This creates a private learning record visible only to you and that student.</p>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Assign practice</button></form>
+  </section>
+{% endblock %}

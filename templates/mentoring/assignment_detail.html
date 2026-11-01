@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ assignment.template.title }} · My training{% endblock %}
+{% block content %}
+  <p><a href="{% if user == assignment.enrollment.student %}{% url 'mentoring:student-dashboard' %}{% else %}{% url 'mentoring:studio' %}{% endif %}">← Back</a></p>
+  <section class="assignment-hero">
+    <div>
+      <div class="chip-row"><span class="status-pill status-{{ assignment.status }}">{{ assignment.get_status_display }}</span><span class="meta-chip">{{ assignment.template.estimated_minutes }} minutes</span></div>
+      <p class="eyebrow">Practice assignment</p>
+      <h1>{{ assignment.template.title }}</h1>
+      <p>{{ assignment.template.objective }}</p>
+    </div>
+    {% if user == assignment.enrollment.student and assignment.status == "assigned" %}<a class="button" href="{% url 'mentoring:submit' assignment.pk %}">Submit progress</a>{% endif %}
+  </section>
+
+  <div class="assignment-layout">
+    <article class="assignment-content">
+      <h2>Practice instructions</h2>
+      {{ assignment.template.instructions|linebreaks }}
+      <h2>What your instructor will evaluate</h2>
+      {{ assignment.template.evaluation_criteria|linebreaks }}
+      {% if assignment.personalized_notes %}<div class="notice"><strong>Personal note</strong><br>{{ assignment.personalized_notes|linebreaksbr }}</div>{% endif %}
+      {% if assignment.template.linked_pages.all %}
+        <h2>Linked knowledge</h2>
+        <ul>{% for page in assignment.template.linked_pages.all %}<li><a href="{% url 'knowledge:page-detail' page.slug %}">{{ page.title }}</a></li>{% endfor %}</ul>
+      {% endif %}
+
+      {% if assignment.submission %}
+        <section class="submission-record">
+          <p class="eyebrow">Student reflection</p>
+          <h2>Submitted progress</h2>
+          <p>{{ assignment.submission.self_assessment|linebreaksbr }}</p>
+          <a href="{{ assignment.submission.video.canonical_url }}" target="_blank" rel="noopener noreferrer nofollow">Open private video reference ↗</a>
+          <p class="privacy-note">This external link is shared only inside this coaching record. Anyone who obtains an unlisted link may still be able to view it on the original service.</p>
+        </section>
+        {% if assignment.submission.review %}
+          <section class="feedback-record">
+            <p class="eyebrow">Instructor feedback</p>
+            <h2>Review from {{ assignment.enrollment.instructor.professional_name }}</h2>
+            {{ assignment.submission.review.overall_feedback|linebreaks }}
+            {% if assignment.submission.review.annotations.all %}
+              <h3>Video notes</h3>
+              <ol class="annotation-list">
+                {% for note in assignment.submission.review.annotations.all %}<li><time>{{ note.timestamp }}</time><span><strong>{{ note.get_category_display }}</strong><br>{{ note.body }}</span></li>{% endfor %}
+              </ol>
+            {% endif %}
+            <div class="next-steps"><strong>Next practice</strong>{{ assignment.submission.review.next_steps|linebreaks }}</div>
+          </section>
+        {% elif user != assignment.enrollment.student %}
+          <a class="button" href="{% url 'mentoring:review' assignment.submission.pk %}">Review submission</a>
+        {% endif %}
+      {% endif %}
+    </article>
+    <aside class="record-sidebar">
+      <h2>Training record</h2>
+      <p><strong>Student</strong><br>{{ assignment.enrollment.student.display_name }}</p>
+      <p><strong>Instructor</strong><br>{{ assignment.enrollment.instructor.professional_name }}</p>
+      <p><strong>Assigned</strong><br>{{ assignment.assigned_at|date:"M j, Y" }}</p>
+      {% if assignment.due_at %}<p><strong>Due</strong><br>{{ assignment.due_at|date:"M j, Y, g:i a" }}</p>{% endif %}
+    </aside>
+  </div>
+{% endblock %}

@@ -14,9 +14,12 @@
         <a href="{% url 'discussions:list' %}?style=bachata&amp;tag=move">Discuss</a>
         <a href="{% url 'knowledge:curriculum-list' %}">Curricula</a>
         <a href="{% url 'knowledge:graph' %}">Knowledge graph</a>
+        <a href="{% url 'mentoring:directory' %}">Mentors</a>
         <a href="{% url 'feedback:create' %}">Get feedback</a>
         {% if user.is_authenticated %}
           <span>{{ user.display_name }}</span>
+          <a href="{% url 'mentoring:student-dashboard' %}">My training</a>
+          {% if user.instructor_profile %}<a href="{% url 'mentoring:studio' %}">Instructor studio</a>{% endif %}
           <a href="{% url 'account_logout' %}">Log out</a>
         {% else %}
           <a href="{% url 'account_login' %}">Log in</a>

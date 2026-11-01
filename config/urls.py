@@ -16,5 +16,6 @@ urlpatterns = [
     path("discussions/", include("apps.discussions.urls")),
     path("feedback/", include("apps.feedback.urls")),
     path("knowledge/", include("apps.knowledge.urls")),
+    path("mentoring/", include("apps.mentoring.urls")),
     path("health/", health, name="health"),
 ]

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Instructor Studio · VDanceHub{% endblock %}
+{% block content %}
+  <section class="studio-heading">
+    <div>
+      <p class="eyebrow">Instructor Studio</p>
+      <h1>Welcome, {{ instructor.professional_name }}</h1>
+      <p>Guide practice, review submissions, and keep the next step clear.</p>
+    </div>
+    <div class="studio-actions">
+      <a class="button secondary-button" href="{% url 'mentoring:template-create' %}">New exercise</a>
+      <a class="button" href="{% url 'mentoring:assignment-create' %}">Assign practice</a>
+    </div>
+  </section>
+
+  <div class="stat-grid">
+    <article><strong>{{ pending|length }}</strong><span>To review</span></article>
+    <article><strong>{{ active_students }}</strong><span>Active students</span></article>
+    <article><strong>{{ program_count }}</strong><span>Programs</span></article>
+  </div>
+
+  <section class="queue-section">
+    <div class="section-heading"><div><p class="eyebrow">Review queue</p><h2>Pending submissions</h2></div></div>
+    {% if pending %}
+      <div class="review-queue">
+        {% for submission in pending %}
+          <article class="review-row">
+            <div>
+              <h3>{{ submission.student.display_name }}</h3>
+              <p><strong>{{ submission.assignment.template.title }}</strong></p>
+              <p>{{ submission.self_assessment }}</p>
+              <small>Submitted {{ submission.submitted_at|timesince }} ago</small>
+            </div>
+            <a class="button" href="{% url 'mentoring:review' submission.pk %}">Review video</a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}<div class="empty-state"><p>Your review queue is clear.</p></div>{% endif %}
+  </section>
+
+  <section>
+    <div class="section-heading"><div><p class="eyebrow">Reusable practice</p><h2>Your exercises</h2></div><a href="{% url 'mentoring:template-create' %}">Create exercise</a></div>
+    <div class="practice-list">
+      {% for practice in templates %}
+        <article class="practice-card"><h3>{{ practice.title }}</h3><p>{{ practice.objective }}</p><small>{{ practice.estimated_minutes }} minutes · {% if practice.is_public %}Public{% else %}Private{% endif %}</small></article>
+      {% empty %}<p>Create an exercise before assigning practice.</p>{% endfor %}
+    </div>
+  </section>
+{% endblock %}

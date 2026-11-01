@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}New practice exercise · VDanceHub{% endblock %}
+{% block content %}
+  <section class="form-shell">
+    <p><a href="{% url 'mentoring:studio' %}">← Instructor Studio</a></p>
+    <p class="eyebrow">Reusable exercise</p>
+    <h1>Create practice</h1>
+    <p>Build it once, then assign it to individual students with personal notes and a due date.</p>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Save exercise</button></form>
+  </section>
+{% endblock %}
