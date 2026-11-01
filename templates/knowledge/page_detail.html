@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }} · VDanceHub{% endblock %}
+{% block content %}
+  <p><a href="{% url 'knowledge:curriculum-list' %}">← Dance commons</a></p>
+  <header class="living-page-heading">
+    <div class="chip-row">
+      <span class="kind-badge">Living page</span>
+      {% for style in page.dance_styles.all %}<span class="meta-chip">{{ style.name }}</span>{% endfor %}
+      {% if page.open_to_contributions %}<span class="meta-chip">Open to contributions</span>{% endif %}
+    </div>
+    <h1>{{ page.title }}</h1>
+    <p>{{ page.summary }}</p>
+  </header>
+
+  <div class="living-layout">
+    <article class="living-body">
+      {% if page.latest_revision %}{{ page.latest_revision.body|linebreaks }}{% endif %}
+      <section class="community-conversations">
+        <p class="eyebrow">Community conversations</p>
+        <h2>Keep the page alive</h2>
+        <ul>
+          {% for thread in page.linked_discussions.all %}
+            {% if thread.curriculum %}<li><a href="{% url 'knowledge:curriculum-discussion' thread.curriculum.slug %}">Continue the discussion: {{ thread.curriculum.name }}</a></li>{% elif thread.native_topic %}<li><a href="{% url 'discussions:detail' thread.native_topic.pk %}">{{ thread.native_topic.title }}</a></li>{% endif %}
+          {% endfor %}
+        </ul>
+      </section>
+    </article>
+    <aside class="living-sidebar">
+      <h2>Page record</h2>
+      <p><strong>Maintained by</strong><br>{{ page.owner.display_name }}{% for contributor in page.contributors.all %}, {{ contributor.display_name }}{% endfor %}</p>
+      {% if page.latest_revision %}<p><strong>Latest change</strong><br>{{ page.latest_revision.edit_summary }}<br><small>{{ page.latest_revision.created_at|date:"M j, Y" }}</small></p>{% endif %}
+      {% if page.reviewed_editions.all %}
+        <h3>Reviewed editions</h3>
+        {% for edition in page.reviewed_editions.all %}<a class="edition-link" href="{% url 'knowledge:edition-detail' page.slug edition.edition_number %}">Edition {{ edition.edition_number }} · {{ edition.scope }}</a>{% endfor %}
+      {% endif %}
+      <h3>Sources</h3>
+      {% for reference in page.references.all %}{% if reference.is_clickable %}<a href="{{ reference.canonical_url }}" target="_blank" rel="noopener noreferrer nofollow ugc">{{ reference.attribution_name }} ↗</a>{% endif %}{% endfor %}
+    </aside>
+  </div>
+{% endblock %}

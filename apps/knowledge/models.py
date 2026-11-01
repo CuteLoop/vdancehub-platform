@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -308,6 +308,7 @@ class KnowledgePage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=180)
     slug = models.SlugField(unique=True)
+    summary = models.TextField(blank=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     contributors = models.ManyToManyField(
         settings.AUTH_USER_MODEL, blank=True, related_name="knowledge_contributions"
@@ -315,8 +316,29 @@ class KnowledgePage(models.Model):
     discussion = models.ForeignKey(
         "discussions.DiscussionThreadRef", on_delete=models.PROTECT, null=True, blank=True
     )
+    linked_discussions = models.ManyToManyField(
+        "discussions.DiscussionThreadRef",
+        blank=True,
+        related_name="knowledge_pages",
+    )
+    dance_styles = models.ManyToManyField(
+        "taxonomy.DanceStyle", blank=True, related_name="knowledge_pages"
+    )
+    references = models.ManyToManyField(SourceReference, blank=True, related_name="knowledge_pages")
+    movement = models.OneToOneField(
+        Movement,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="living_page",
+    )
+    open_to_contributions = models.BooleanField(default=True)
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def latest_revision(self) -> "KnowledgeRevision | None":
+        return self.revisions.order_by("-created_at").first()
 
 
 class KnowledgeRevision(models.Model):
@@ -326,3 +348,41 @@ class KnowledgeRevision(models.Model):
     body = models.TextField()
     edit_summary = models.CharField(max_length=240)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class ReviewedEdition(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    page = models.ForeignKey(
+        KnowledgePage, on_delete=models.PROTECT, related_name="reviewed_editions"
+    )
+    source_revision = models.ForeignKey(
+        KnowledgeRevision, on_delete=models.PROTECT, related_name="reviewed_editions"
+    )
+    title = models.CharField(max_length=180)
+    slug = models.SlugField(max_length=200, unique=True)
+    edition_number = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+    scope = models.CharField(max_length=240)
+    body = models.TextField()
+    reviewed_by = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, related_name="reviewed_knowledge_editions"
+    )
+    published_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-published_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["page", "edition_number"], name="unique_page_reviewed_edition"
+            )
+        ]
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if not self._state.adding:
+            raise ValidationError("Reviewed editions are immutable; publish a new edition instead.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        raise ValidationError("Reviewed editions are immutable.")

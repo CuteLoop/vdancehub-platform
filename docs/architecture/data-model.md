@@ -32,9 +32,13 @@ unverified.
 
 ## Knowledge and projects
 
-Knowledge pages have owners and named contributors. Content lives in immutable revisions with edit
-summaries. Projects have contributors, discussions, video references, and milestones. Application
-services prevent an unlisted video from being attached to public knowledge.
+Knowledge has three public forms: open discussions, living pages, and reviewed editions. A
+`KnowledgePage` has a permanent identity, named contributors, dance styles, sources, and linked
+discussions. Content lives in append-only `KnowledgeRevision` snapshots with edit summaries.
+`ReviewedEdition` captures one revision as an immutable publication with an explicit scope and named
+reviewers; it does not replace or close the living page. Projects have contributors, discussions,
+video references, and milestones. Application services prevent an unlisted video from being attached
+to public knowledge.
 
 `Movement` stores a normalized knowledge node or an attributed catalog record. `MovementAlias`
 records school, language, or regional names without forcing one vocabulary. `MovementRelationship`

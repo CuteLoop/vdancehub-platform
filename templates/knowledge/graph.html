@@ -13,7 +13,7 @@
         <h2>{{ group.grouper.name }}</h2>
         <div class="graph-nodes">
           {% for concept in group.list %}
-            <a class="graph-node style-{{ concept.dance_style.slug }}" href="{% url 'knowledge:movement-detail' concept.slug %}">
+            <a class="graph-node style-{{ concept.dance_style.slug }}" href="{% if concept.living_page %}{% url 'knowledge:page-detail' concept.living_page.slug %}{% else %}{% url 'knowledge:movement-detail' concept.slug %}{% endif %}">
               <strong>{{ concept.name }}</strong>
               <small>{{ concept.module_appearances.all|length }} module{{ concept.module_appearances.all|length|pluralize }}</small>
             </a>

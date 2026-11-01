@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ edition.title }} · VDanceHub{% endblock %}
+{% block content %}
+  <p><a href="{% url 'knowledge:page-detail' edition.page.slug %}">← Living page</a></p>
+  <header class="edition-heading">
+    <div class="chip-row"><span class="kind-badge">Reviewed edition</span><span class="meta-chip">Immutable snapshot</span></div>
+    <h1>{{ edition.title }}</h1>
+    <p><strong>Scope:</strong> {{ edition.scope }}</p>
+    <p class="notice">Review is a commitment to clarity, attribution, and usefulness—not a declaration of universal correctness.</p>
+  </header>
+  <article class="living-body">{{ edition.body|linebreaks }}</article>
+  <footer class="edition-credits"><strong>Reviewed by</strong> {% for reviewer in edition.reviewed_by.all %}{{ reviewer.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %} · Published {{ edition.published_at|date:"M j, Y" }}</footer>
+{% endblock %}

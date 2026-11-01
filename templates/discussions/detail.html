@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 {% block title %}{{ topic.title }} · VDanceHub{% endblock %}
 {% block content %}
-  <p><a href="{% url 'discussions:list' %}?style=bachata&amp;tag=move">← Bachata moves</a></p>
+  {% if curriculum %}
+    <p><a href="{% url 'knowledge:curriculum-detail' curriculum.slug %}">← {{ curriculum.name }}</a></p>
+    <p class="eyebrow">Curriculum conversation</p>
+  {% else %}
+    <p><a href="{% url 'discussions:list' %}?style=bachata&amp;tag=move">← Bachata moves</a></p>
+  {% endif %}
   <header class="discussion-heading">
     <div class="chip-row">
       <span class="kind-badge">{{ topic.get_kind_display }}</span>
@@ -50,7 +55,7 @@
       <p class="notice">This discussion is closed to new replies.</p>
     {% elif user.is_authenticated %}
       {% if user.adult_confirmed_at %}
-        <form method="post" action="{% url 'discussions:reply' topic.pk %}">
+        {% if curriculum %}<form method="post" action="{% url 'knowledge:curriculum-reply' curriculum.slug %}">{% else %}<form method="post" action="{% url 'discussions:reply' topic.pk %}">{% endif %}
           {% csrf_token %}
           {{ reply_form.as_p }}
           <p class="form-help">Be constructive. Credit teachers and creators when sharing their terminology.</p>

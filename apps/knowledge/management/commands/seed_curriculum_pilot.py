@@ -10,10 +10,13 @@ from apps.knowledge.models import (
     Curriculum,
     CurriculumModule,
     CurriculumVersion,
+    KnowledgePage,
+    KnowledgeRevision,
     ModuleConcept,
     Movement,
     MovementRelationship,
     PostCitation,
+    ReviewedEdition,
     SourceReference,
 )
 from apps.knowledge.references import classify_reference_url
@@ -37,6 +40,16 @@ class CurriculumSeed:
     summary: str
     source_url: str
     modules: tuple[ModuleSeed, ...]
+
+
+@dataclass(frozen=True)
+class LivingPageSeed:
+    slug: str
+    title: str
+    summary: str
+    concept_slug: str
+    curricula: tuple[str, ...]
+    body: str
 
 
 SHARED_CONNECTION = ("Partner connection", "shared-partner-connection")
@@ -215,6 +228,75 @@ CURRICULA = (
 
 REDDIT_URL = "https://www.reddit.com/r/Bachata/comments/1igk3vo/"
 
+LIVING_PAGES = (
+    LivingPageSeed(
+        slug="bachata-basic-step",
+        title="Bachata Basic Step",
+        summary=(
+            "A foundation for exploring rhythm, weight transfer, and partner connection across "
+            "different Bachata teaching traditions."
+        ),
+        concept_slug="bachata-basic-step",
+        curricula=("rumba-y-timbal-bachata",),
+        body=(
+            "Overview\n"
+            "The basic step is a starting point for rhythm, weight transfer, and conversation "
+            "with a partner. Its execution and teaching sequence vary across communities.\n\n"
+            "Different approaches\n"
+            "Traditional and Dominican perspectives often foreground rhythmic interpretation, "
+            "adaptable footwork, and weight transfer. Modern social-class perspectives often use "
+            "a structured side basic as an accessible framework for partner dancing.\n\n"
+            "Open questions\n"
+            "How much should beginners focus on the tap? Which drills help dancers feel weight "
+            "transfer without making the step rigid?"
+        ),
+    ),
+    LivingPageSeed(
+        slug="salsa-cross-body-lead",
+        title="Salsa Cross-body Lead",
+        summary=(
+            "A shared Salsa movement page for slot awareness, partner connection, timing, and "
+            "different teaching sequences."
+        ),
+        concept_slug="salsa-cross-body-lead",
+        curricula=("rumba-y-timbal-linear-salsa",),
+        body=(
+            "Overview\n"
+            "The cross-body lead changes places while preserving timing, communication, and a "
+            "clear pathway. Schools may introduce it at different points in a curriculum.\n\n"
+            "Different approaches\n"
+            "A geometry-first explanation emphasizes opening the slot and managing direction. A "
+            "connection-first explanation begins with weight transfer, invitation, and response. "
+            "Both can be useful depending on the learner and teaching context.\n\n"
+            "Open questions\n"
+            "Which prerequisites help beginners most? How do on1 and on2 explanations differ "
+            "without turning one timing system into the default?"
+        ),
+    ),
+    LivingPageSeed(
+        slug="partner-connection",
+        title="Partner Connection",
+        summary=(
+            "A cross-style living page for the many physical, visual, rhythmic, and responsive "
+            "ways dancers communicate."
+        ),
+        concept_slug="shared-partner-connection",
+        curricula=("rumba-y-timbal-bachata", "rumba-y-timbal-linear-salsa"),
+        body=(
+            "Overview\n"
+            "Connection is not one fixed hold. Dancers communicate through shared timing, visual "
+            "attention, frame, tone, movement intention, and continuous response.\n\n"
+            "Different approaches\n"
+            "Some classes begin with frame and hand placement. Others begin with mirroring, "
+            "walking, or musical exercises before adding a hold. These approaches can coexist and "
+            "serve different learners.\n\n"
+            "Open questions\n"
+            "How should connection be introduced without implying identical mechanics across "
+            "Bachata, linear Salsa, and Casino?"
+        ),
+    ),
+)
+
 
 class Command(BaseCommand):
     help = "Create three attributed curriculum pilots in one shared knowledge graph."
@@ -227,6 +309,9 @@ class Command(BaseCommand):
             canonical_url=classified.canonical_url, attribution_name=attribution
         ).first()
         if reference is not None:
+            if reference.title != title:
+                reference.title = title
+                reference.save(update_fields=["title"])
             return reference
         return SourceReference.objects.create(
             submitted_url=url,
@@ -263,26 +348,32 @@ class Command(BaseCommand):
             style, _ = DanceStyle.objects.get_or_create(
                 name=curriculum_seed.style_name, slug=curriculum_seed.style_slug
             )
+            source_title = (
+                "Published Salsa and Bachata curricula"
+                if "rumbaytimbal.com" in curriculum_seed.source_url
+                else f"Published syllabus for {curriculum_seed.name}"
+            )
             source = self._reference(
                 url=curriculum_seed.source_url,
-                title=f"Published syllabus for {curriculum_seed.name}",
+                title=source_title,
                 attribution=curriculum_seed.organization,
                 curator=curator,
             )
             topic = DiscussionTopic.objects.filter(
                 author=curator, title=f"Review: {curriculum_seed.name}"
             ).first()
+            discussion_body = (
+                "Which fundamentals are missing? Which skills should come first, and does this "
+                "progression match real social-dancing experience?\n\n"
+                "The curriculum titles are attributed to the linked publisher. Suggested "
+                "learning links are conversation starters, not universal teaching facts."
+            )
             if topic is None:
                 thread = create_topic_with_first_post(
                     author=curator,
                     title=f"Review: {curriculum_seed.name}",
                     kind=DiscussionTopic.Kind.DISCUSSION,
-                    body=(
-                        "Which fundamentals are missing? Which skills should be prerequisites, "
-                        "and does this progression match real social-dancing experience?\n\n"
-                        "The curriculum titles are attributed to the linked publisher. Graph edges "
-                        "are community-reviewable proposals, not universal teaching facts."
-                    ),
+                    body=discussion_body,
                 )
                 topic = thread.native_topic
                 assert topic is not None
@@ -290,6 +381,9 @@ class Command(BaseCommand):
             topic.dance_styles.add(style)
             first_post = topic.posts.first()
             assert first_post is not None
+            if first_post.author_id == curator.pk and first_post.body != discussion_body:
+                first_post.body = discussion_body
+                first_post.save(update_fields=["body", "updated_at"])
             PostCitation.objects.get_or_create(
                 post=first_post, position=1, defaults={"reference": source}
             )
@@ -372,6 +466,49 @@ class Command(BaseCommand):
                             },
                         )
                     previous = concept
+
+        for page_seed in LIVING_PAGES:
+            concept = Movement.objects.get(slug=page_seed.concept_slug)
+            curricula = list(
+                Curriculum.objects.filter(slug__in=page_seed.curricula).select_related(
+                    "dance_style", "source", "discussion"
+                )
+            )
+            assert curricula
+            page, _ = KnowledgePage.objects.update_or_create(
+                slug=page_seed.slug,
+                defaults={
+                    "title": page_seed.title,
+                    "summary": page_seed.summary,
+                    "owner": curator,
+                    "movement": concept,
+                    "open_to_contributions": True,
+                    "is_published": True,
+                },
+            )
+            page.dance_styles.set([curriculum.dance_style for curriculum in curricula])
+            page.references.set([curriculum.source for curriculum in curricula])
+            page.linked_discussions.set(
+                [curriculum.discussion for curriculum in curricula if curriculum.discussion]
+            )
+            revision, _ = KnowledgeRevision.objects.get_or_create(
+                page=page,
+                edit_summary="Create the curriculum pilot living page.",
+                defaults={"author": curator, "body": page_seed.body},
+            )
+            if page.slug == "bachata-basic-step":
+                edition, _ = ReviewedEdition.objects.get_or_create(
+                    page=page,
+                    edition_number=1,
+                    defaults={
+                        "source_revision": revision,
+                        "title": "Bachata Fundamentals · Community Guide, Edition 1",
+                        "slug": "bachata-fundamentals-edition-1",
+                        "scope": "Beginner orientation across multiple teaching approaches",
+                        "body": page_seed.body,
+                    },
+                )
+                edition.reviewed_by.add(curator)
 
         self.stdout.write(
             self.style.SUCCESS(

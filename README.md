@@ -25,6 +25,10 @@ the [delivery plan](docs/delivery/implementation-plan.md), the current
 [MVP progress audit](docs/delivery/progress-audit.md), and the demo import
 [data provenance](docs/data-provenance.md).
 
+The knowledge experience follows the [living knowledge commons principles](docs/product/knowledge-commons-principles.md):
+open discussions feed collaboratively maintained pages, while scoped reviewed editions preserve
+stable snapshots without claiming universal authority.
+
 ## Local development
 
 Prerequisites: Python 3.12+ (production target: 3.13), Docker, and Docker Compose.
