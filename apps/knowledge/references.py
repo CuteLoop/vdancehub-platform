@@ -15,6 +15,9 @@ DOMAIN_ALLOWLIST = {
     "www.mariuselena.com",
     "reddit.com",
     "www.reddit.com",
+    "rumbaytimbal.com",
+    "www.rumbaytimbal.com",
+    "casinorueda.mit.edu",
     "vdanceclub.com",
     "www.vdanceclub.com",
 }

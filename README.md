@@ -51,6 +51,17 @@ Then open `http://localhost:8000/knowledge/moves/`. The seed creates 37 attribut
 records, ten normalized concepts, linked discussions, and proposed relationships for community
 review. See the [data provenance notes](docs/data-provenance.md) before expanding the import.
 
+To load the three-curriculum pilot and shared concept graph, run:
+
+```bash
+.venv/bin/python manage.py seed_curriculum_pilot
+```
+
+Then open `http://localhost:8000/knowledge/curricula/` or
+`http://localhost:8000/knowledge/graph/`. The pilot keeps the two Rumba y Timbal pathways and MIT's
+modular Casino/Rueda pathway distinct while allowing concepts to participate in one attributed,
+community-reviewable graph.
+
 ## Safety boundary
 
 The alpha is for adults aged 18 and over. Feedback videos are unlisted by default, but “unlisted”

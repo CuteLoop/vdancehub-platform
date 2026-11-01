@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Shared knowledge graph · VDanceHub{% endblock %}
+{% block content %}
+  <div class="graph-heading">
+    <div><p class="eyebrow">Explore relationships</p><h1>Shared knowledge graph</h1><p>Concepts retain their style-specific identity while shared principles connect curricula. Every edge exposes its review status and provenance.</p></div>
+    <a class="button secondary-button" href="{% url 'knowledge:curriculum-list' %}">View curricula</a>
+  </div>
+
+  {% regroup concepts by dance_style as style_groups %}
+  <section class="graph-board" aria-label="Curriculum concept graph">
+    {% for group in style_groups %}
+      <div class="graph-cluster">
+        <h2>{{ group.grouper.name }}</h2>
+        <div class="graph-nodes">
+          {% for concept in group.list %}
+            <a class="graph-node style-{{ concept.dance_style.slug }}" href="{% url 'knowledge:movement-detail' concept.slug %}">
+              <strong>{{ concept.name }}</strong>
+              <small>{{ concept.module_appearances.all|length }} module{{ concept.module_appearances.all|length|pluralize }}</small>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </section>
+
+  <section class="edge-ledger">
+    <div class="section-heading"><div><p class="eyebrow">Edge ledger</p><h2>Why these concepts connect</h2></div><p>Ordering-derived edges are proposals, never universal pedagogical facts.</p></div>
+    <div class="edge-list">
+      {% for relation in relationships %}
+        <article><a href="{% url 'knowledge:movement-detail' relation.from_movement.slug %}">{{ relation.from_movement.name }}</a><span class="edge-arrow">→</span><a href="{% url 'knowledge:movement-detail' relation.to_movement.slug %}">{{ relation.to_movement.name }}</a><div><span class="relation-kind">{{ relation.get_kind_display }}</span> <span class="reference-status">{{ relation.get_status_display }} · {{ relation.get_provenance_display }}</span></div></article>
+      {% empty %}<div class="empty-state">No curriculum relationships have been proposed.</div>{% endfor %}
+    </div>
+  </section>
+{% endblock %}

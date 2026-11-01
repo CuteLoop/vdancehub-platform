@@ -26,3 +26,20 @@ mechanisms, and replace the research-only extraction with a rate-limited support
 
 The seed is idempotent and is never run automatically during deployment. Operators must choose to
 run it in the intended environment.
+
+## Three-curriculum knowledge-graph pilot
+
+The command `python manage.py seed_curriculum_pilot` creates three attributed curriculum snapshots,
+ten ordered modules, shared concept nodes, three review discussions, and proposed ordering-derived
+edges. The bounded source set was manually reviewed on 2026-11-01:
+
+- Rumba y Timbal video library: <https://www.rumbaytimbal.com/rumba-video-library/>
+- MIT Casino Rueda syllabus: <https://casinorueda.mit.edu/syllabus/>
+- r/Bachata syllabus discussion: <https://www.reddit.com/r/Bachata/comments/1igk3vo/>
+
+The seed stores curriculum and movement titles, concise original summaries, ordering, attribution,
+and canonical links. It does not copy lesson descriptions, videos, images, or proprietary course
+materials. A module's published ordering supports `TAUGHT_IN` membership; consecutive ordering is
+represented only as an imported, proposed prerequisite and is explicitly open to community review.
+
+The seed is idempotent and never runs automatically during deployment.

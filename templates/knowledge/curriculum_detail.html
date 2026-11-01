@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ curriculum.name }} · VDanceHub{% endblock %}
+{% block content %}
+  <p><a href="{% url 'knowledge:curriculum-list' %}">← Curriculum pilots</a></p>
+  <header class="curriculum-detail-heading">
+    <div>
+      <div class="chip-row"><span class="kind-badge">{{ curriculum.dance_style.name }}</span><span class="meta-chip">Community annotated</span></div>
+      <h1>{{ curriculum.name }}</h1>
+      <p>{{ curriculum.summary }}</p>
+    </div>
+    <aside>
+      <span class="reference-status">{{ curriculum.source.get_validation_status_display }}</span>
+      <strong>{{ curriculum.organization }}</strong>
+      {% if curriculum.source.is_clickable %}<a href="{{ curriculum.source.canonical_url }}" target="_blank" rel="noopener noreferrer nofollow ugc">View published source ↗</a>{% endif %}
+    </aside>
+  </header>
+
+  {% for version in curriculum.versions.all %}
+    <div class="version-bar"><span>{{ version.label }}</span><span class="kind-badge">{{ version.get_status_display }}</span></div>
+    <section class="learning-path" aria-label="{{ curriculum.name }} learning path">
+      {% for module in version.modules.all %}
+        <article class="module-card">
+          <div class="module-number">{{ module.position|stringformat:"02d" }}</div>
+          <div class="module-content">
+            <p class="eyebrow">{{ module.title }} learning path</p>
+            <h2>{{ module.title }}</h2>
+            <p>{{ module.summary }}</p>
+            <ol class="concept-path">
+              {% for entry in module.concept_entries.all %}
+                <li>
+                  <span class="path-marker" aria-hidden="true"></span>
+                  <div><a href="{% url 'knowledge:movement-detail' entry.concept.slug %}">{{ entry.concept.name }}</a><small>{{ entry.note }}</small></div>
+                </li>
+              {% endfor %}
+            </ol>
+          </div>
+        </article>
+      {% endfor %}
+    </section>
+  {% endfor %}
+
+  <div class="curriculum-actions">
+    <div><p class="eyebrow">Community layer</p><h2>Question the pathway</h2><p>Which fundamentals are missing? Which proposed prerequisites need correction or qualification?</p></div>
+    {% if curriculum.discussion and curriculum.discussion.native_topic %}<a class="button" href="{% url 'discussions:detail' curriculum.discussion.native_topic.pk %}">Join curriculum discussion</a>{% endif %}
+  </div>
+{% endblock %}

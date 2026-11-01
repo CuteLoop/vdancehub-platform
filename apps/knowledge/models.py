@@ -204,6 +204,106 @@ class MovementRelationship(models.Model):
         ]
 
 
+class Curriculum(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=180)
+    slug = models.SlugField(max_length=200, unique=True)
+    dance_style = models.ForeignKey(
+        "taxonomy.DanceStyle", on_delete=models.PROTECT, related_name="curricula"
+    )
+    organization = models.CharField(max_length=180)
+    summary = models.TextField()
+    source = models.ForeignKey(SourceReference, on_delete=models.PROTECT, related_name="curricula")
+    discussion = models.OneToOneField(
+        "discussions.DiscussionThreadRef",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="curriculum",
+    )
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class CurriculumVersion(models.Model):
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        PUBLISHED = "published", "Published source"
+        ARCHIVED = "archived", "Archived"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    curriculum = models.ForeignKey(Curriculum, on_delete=models.CASCADE, related_name="versions")
+    label = models.CharField(max_length=80)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
+    note = models.CharField(max_length=240, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["curriculum", "label"], name="unique_curriculum_version_label"
+            )
+        ]
+
+
+class CurriculumModule(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.ForeignKey(CurriculumVersion, on_delete=models.CASCADE, related_name="modules")
+    title = models.CharField(max_length=160)
+    slug = models.SlugField(max_length=180)
+    summary = models.TextField(blank=True)
+    position = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+
+    class Meta:
+        ordering = ["position", "title"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["version", "slug"], name="unique_curriculum_module_slug"
+            ),
+            models.UniqueConstraint(
+                fields=["version", "position"], name="unique_curriculum_module_position"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.version.curriculum.name}: {self.title}"
+
+
+class ModuleConcept(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    module = models.ForeignKey(
+        CurriculumModule, on_delete=models.CASCADE, related_name="concept_entries"
+    )
+    concept = models.ForeignKey(
+        Movement, on_delete=models.PROTECT, related_name="module_appearances"
+    )
+    position = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+    note = models.CharField(max_length=240, blank=True)
+    source = models.ForeignKey(
+        SourceReference,
+        on_delete=models.PROTECT,
+        related_name="module_concepts",
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ["position", "concept__name"]
+        constraints = [
+            models.UniqueConstraint(fields=["module", "concept"], name="unique_module_concept"),
+            models.UniqueConstraint(
+                fields=["module", "position"], name="unique_module_concept_position"
+            ),
+        ]
+
+
 class KnowledgePage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=180)

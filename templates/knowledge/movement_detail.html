@@ -16,6 +16,14 @@
 
   <div class="knowledge-columns">
     <section>
+      {% if movement.module_appearances.all %}
+        <h2>Taught in</h2>
+        <ul class="relationship-list">
+          {% for entry in movement.module_appearances.all %}
+            <li><a href="{% url 'knowledge:curriculum-detail' entry.module.version.curriculum.slug %}">{{ entry.module.version.curriculum.name }}</a> <span class="relation-kind">{{ entry.module.title }}</span></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
       <h2>Relationship graph</h2>
       <ul class="relationship-list">
         {% for relation in movement.outgoing_relationships.all %}

@@ -42,6 +42,12 @@ connects prerequisites, components, variations, and related movements. Every edg
 and a status of proposed, community accepted, or disputed; imported and name-inferred edges never
 silently become facts.
 
+`Curriculum` identifies an attributed teaching system independently of its concepts. A version owns
+ordered `CurriculumModule` records, while `ModuleConcept` connects modules to stable `Movement`
+concept nodes. The same concept may therefore appear in several modules or curricula without being
+duplicated. Module membership represents `TAUGHT_IN`; proposed prerequisite edges remain separate so
+source ordering is not silently presented as universal pedagogy.
+
 `SourceReference` stores the submitted and canonical URL, exact hostname, provider classification,
 attribution, and moderation status. `PostCitation` gives references a stable number within a post.
 Only exact supported-provider or allowlisted domains are immediately clickable; other safe HTTPS

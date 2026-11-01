@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Curriculum pilots · VDanceHub{% endblock %}
+{% block content %}
+  <div class="curriculum-hero">
+    <div>
+      <p class="eyebrow">Dance commons pilot</p>
+      <h1>Three curriculum pilots, one shared graph</h1>
+      <p>Compare attributed learning pathways without forcing every dance style into one hierarchy. Published ordering is preserved; inferred prerequisites remain community-reviewable proposals.</p>
+    </div>
+    <a class="button secondary-button" href="{% url 'knowledge:graph' %}">Open the shared graph</a>
+  </div>
+
+  <div class="curriculum-grid">
+    {% for curriculum in curricula %}
+      <article class="curriculum-card">
+        <div class="curriculum-card-top">
+          <span class="style-orb style-{{ curriculum.dance_style.slug }}" aria-hidden="true"></span>
+          <div>
+            <span class="kind-badge">{{ curriculum.dance_style.name }}</span>
+            <h2><a href="{% url 'knowledge:curriculum-detail' curriculum.slug %}">{{ curriculum.name }}</a></h2>
+          </div>
+        </div>
+        <p>{{ curriculum.summary }}</p>
+        <dl class="curriculum-stats">
+          <div><dt>Publisher</dt><dd>{{ curriculum.organization }}</dd></div>
+          <div><dt>Modules</dt><dd>{% for version in curriculum.versions.all %}{{ version.modules.all|length }}{% endfor %}</dd></div>
+        </dl>
+        <a class="text-link" href="{% url 'knowledge:curriculum-detail' curriculum.slug %}">Explore learning path →</a>
+      </article>
+    {% empty %}
+      <div class="empty-state"><h2>The pilot is ready to seed.</h2><p>No curriculum snapshots are loaded yet.</p></div>
+    {% endfor %}
+  </div>
+{% endblock %}

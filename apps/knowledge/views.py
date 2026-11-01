@@ -2,7 +2,50 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
-from .models import Movement
+from .models import Curriculum, Movement, MovementRelationship
+
+
+def curriculum_list(request: HttpRequest) -> HttpResponse:
+    curricula = Curriculum.objects.select_related("dance_style", "source").prefetch_related(
+        "versions__modules__concept_entries"
+    )
+    return render(request, "knowledge/curriculum_list.html", {"curricula": curricula})
+
+
+def curriculum_detail(request: HttpRequest, slug: str) -> HttpResponse:
+    curriculum = get_object_or_404(
+        Curriculum.objects.select_related(
+            "dance_style", "source", "discussion__native_topic"
+        ).prefetch_related(
+            "versions__modules__concept_entries__concept__dance_style",
+            "versions__modules__concept_entries__concept__outgoing_relationships__to_movement",
+        ),
+        slug=slug,
+    )
+    return render(request, "knowledge/curriculum_detail.html", {"curriculum": curriculum})
+
+
+def graph(request: HttpRequest) -> HttpResponse:
+    concepts = (
+        Movement.objects.filter(is_concept=True, module_appearances__isnull=False)
+        .select_related("dance_style")
+        .prefetch_related("module_appearances__module__version__curriculum")
+        .distinct()
+        .order_by("dance_style__name", "name")
+    )
+    relationships = (
+        MovementRelationship.objects.filter(
+            from_movement__module_appearances__isnull=False,
+            to_movement__module_appearances__isnull=False,
+        )
+        .select_related("from_movement", "to_movement")
+        .distinct()[:80]
+    )
+    return render(
+        request,
+        "knowledge/graph.html",
+        {"concepts": concepts, "relationships": relationships},
+    )
 
 
 def movement_list(request: HttpRequest) -> HttpResponse:
@@ -40,6 +83,7 @@ def movement_detail(request: HttpRequest, slug: str) -> HttpResponse:
             "references",
             "outgoing_relationships__to_movement",
             "incoming_relationships__from_movement",
+            "module_appearances__module__version__curriculum",
         ),
         slug=slug,
     )
