@@ -8,7 +8,8 @@ secret store. Never commit real credentials or copy production data into develop
 ## Deployment
 
 Railway detects the root Dockerfile. `railway.toml` runs migrations as an isolated pre-deploy command,
-then starts Gunicorn using the Docker image command. The configured `/health/` deployment check must
+and the Docker startup command applies any still-pending migrations before starting Gunicorn as a
+portable safety net. The configured `/health/` deployment check must
 return `2xx` before Railway activates a release; it must later gain dependency-aware readiness without
 leaking configuration.
 
