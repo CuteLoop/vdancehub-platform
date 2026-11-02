@@ -1,8 +1,9 @@
-from typing import cast
+from typing import Any, cast
 
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.knowledge.models import KnowledgePage
@@ -10,13 +11,18 @@ from apps.mediarefs.models import VideoReference
 
 from .models import (
     Enrollment,
+    ExternalLink,
     InstructorProfile,
     InstructorReview,
+    MentoringOffer,
+    MentoringRequest,
     PracticeAssignment,
+    PracticeJournal,
     PracticeSubmission,
     PracticeTemplate,
     ReviewAnnotation,
 )
+from .validators import validate_external_https_url
 
 
 class InstructorProfileForm(forms.Form):
@@ -100,6 +106,144 @@ class PracticeTemplateForm(forms.ModelForm):  # type: ignore[type-arg]
         return cast(PracticeTemplate, template)
 
 
+class MentoringOfferForm(forms.ModelForm):  # type: ignore[type-arg]
+    booking_url = forms.URLField(max_length=2048, assume_scheme="https")
+    booking_label = forms.CharField(max_length=120, initial="Book with instructor")
+
+    class Meta:
+        model = MentoringOffer
+        fields = (
+            "title",
+            "description",
+            "format",
+            "price_amount",
+            "price_currency",
+            "included_reviews",
+            "turnaround_days",
+            "terms",
+        )
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 4}),
+            "terms": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def clean_booking_url(self) -> str:
+        url = cast(str, self.cleaned_data["booking_url"])
+        validate_external_https_url(url)
+        return url
+
+    def clean_price_currency(self) -> str:
+        currency = cast(str, self.cleaned_data["price_currency"]).upper().strip()
+        if self.cleaned_data.get("price_amount") and len(currency) != 3:
+            raise ValidationError("Use a three-letter currency code such as USD or EUR.")
+        return currency
+
+    @transaction.atomic
+    def save_for(self, *, instructor: InstructorProfile) -> MentoringOffer:
+        link = ExternalLink.objects.create(
+            owner=instructor.user,
+            url=self.cleaned_data["booking_url"],
+            label=self.cleaned_data["booking_label"],
+        )
+        offer = self.save(commit=False)
+        offer.instructor = instructor
+        offer.booking_link = link
+        offer.full_clean()
+        offer.save()
+        return cast(MentoringOffer, offer)
+
+
+class MentoringRequestForm(forms.ModelForm):  # type: ignore[type-arg]
+    class Meta:
+        model = MentoringRequest
+        fields = ("offer", "focus")
+        widgets = {"focus": forms.Textarea(attrs={"rows": 5})}
+        labels = {"focus": "What would you like help with?"}
+
+    def __init__(
+        self,
+        *args: object,
+        instructor: InstructorProfile,
+        student: User,
+        **kwargs: object,
+    ):
+        self.instructor = instructor
+        self.student = student
+        super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+        offer_field = self.fields["offer"]
+        assert isinstance(offer_field, forms.ModelChoiceField)
+        offer_field.queryset = instructor.offers.filter(
+            is_active=True, format=MentoringOffer.Format.VIDEO_REVIEW
+        )
+
+    def clean_offer(self) -> MentoringOffer:
+        offer = cast(MentoringOffer, self.cleaned_data["offer"])
+        if MentoringRequest.objects.filter(
+            offer=offer,
+            student=self.student,
+            status=MentoringRequest.Status.REQUESTED,
+        ).exists():
+            raise ValidationError("You already have a pending request for this offer.")
+        return offer
+
+    def save_for(self, *, student: User) -> MentoringRequest:
+        mentoring_request = self.save(commit=False)
+        mentoring_request.student = student
+        mentoring_request.full_clean()
+        mentoring_request.save()
+        return cast(MentoringRequest, mentoring_request)
+
+
+class AcceptMentoringRequestForm(forms.Form):
+    template = forms.ModelChoiceField(queryset=PracticeTemplate.objects.none())
+    due_at = forms.DateTimeField(
+        required=False, widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
+    )
+    instructor_note = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}))
+
+    def __init__(self, *args: object, instructor: InstructorProfile, **kwargs: object):
+        self.instructor = instructor
+        super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+        template_field = self.fields["template"]
+        assert isinstance(template_field, forms.ModelChoiceField)
+        template_field.queryset = instructor.practice_templates.all()
+
+    @transaction.atomic
+    def save(self, *, mentoring_request: MentoringRequest) -> PracticeAssignment:
+        enrollment = Enrollment.objects.filter(
+            instructor=self.instructor,
+            student=mentoring_request.student,
+            status__in=[Enrollment.Status.INVITED, Enrollment.Status.ACTIVE],
+        ).first()
+        if enrollment is None:
+            enrollment = Enrollment.objects.create(
+                instructor=self.instructor,
+                student=mentoring_request.student,
+                status=Enrollment.Status.ACTIVE,
+            )
+        elif enrollment.status == Enrollment.Status.INVITED:
+            enrollment.status = Enrollment.Status.ACTIVE
+            enrollment.save(update_fields=["status"])
+
+        assignment = PracticeAssignment(
+            enrollment=enrollment,
+            template=self.cleaned_data["template"],
+            due_at=self.cleaned_data["due_at"],
+            personalized_notes=self.cleaned_data["instructor_note"],
+        )
+        assignment.full_clean()
+        assignment.save()
+        mentoring_request.status = MentoringRequest.Status.ACCEPTED
+        mentoring_request.instructor_note = self.cleaned_data["instructor_note"]
+        mentoring_request.assignment = assignment
+        mentoring_request.responded_at = timezone.now()
+        mentoring_request.full_clean()
+        mentoring_request.save(
+            update_fields=["status", "instructor_note", "assignment", "responded_at"]
+        )
+        return assignment
+
+
 class AssignmentInviteForm(forms.Form):
     student_email = forms.EmailField(help_text="The student must already have a VDanceHub account.")
     template = forms.ModelChoiceField(queryset=PracticeTemplate.objects.none())
@@ -180,6 +324,43 @@ class PracticeSubmissionForm(forms.Form):
         assignment.status = PracticeAssignment.Status.SUBMITTED
         assignment.save(update_fields=["status"])
         return submission
+
+
+class PracticeJournalForm(forms.ModelForm):  # type: ignore[type-arg]
+    video_url = forms.URLField(max_length=2048, required=False, assume_scheme="https")
+    video_description = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 2}))
+
+    class Meta:
+        model = PracticeJournal
+        fields = ("practice_date", "minutes", "notes")
+        widgets = {
+            "practice_date": forms.DateInput(attrs={"type": "date"}),
+            "notes": forms.Textarea(attrs={"rows": 5}),
+        }
+
+    def clean(self) -> dict[str, Any]:
+        cleaned_data = super().clean() or {}
+        if cleaned_data.get("video_url") and not cleaned_data.get("video_description"):
+            self.add_error("video_description", "Describe the optional practice video.")
+        return cleaned_data
+
+    @transaction.atomic
+    def save_for(self, *, student: User) -> PracticeJournal:
+        video = None
+        if self.cleaned_data.get("video_url"):
+            video = VideoReference.objects.create(
+                owner=student,
+                submitted_url=self.cleaned_data["video_url"],
+                attribution_name=student.display_name,
+                description=self.cleaned_data["video_description"],
+                visibility=VideoReference.Visibility.UNLISTED,
+            )
+        entry = self.save(commit=False)
+        entry.student = student
+        entry.video = video
+        entry.full_clean()
+        entry.save()
+        return cast(PracticeJournal, entry)
 
 
 class InstructorReviewForm(forms.Form):

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Request feedback from {{ instructor.professional_name }}{% endblock %}
+{% block content %}
+  <section class="form-shell">
+    <p><a href="{% url 'mentoring:profile' instructor.slug %}">← {{ instructor.professional_name }}</a></p>
+    <p class="eyebrow">One-time review request</p>
+    <h1>What would you like help with?</h1>
+    <p>This sends a private request to {{ instructor.professional_name }}. It does not confirm enrollment or payment. If accepted, your instructor will create a private video assignment.</p>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Send review request</button></form>
+  </section>
+{% endblock %}

@@ -7,16 +7,22 @@ from django.shortcuts import get_object_or_404, redirect, render
 from apps.accounts.models import User
 
 from .forms import (
+    AcceptMentoringRequestForm,
     AssignmentInviteForm,
     InstructorProfileForm,
     InstructorReviewForm,
+    MentoringOfferForm,
+    MentoringRequestForm,
+    PracticeJournalForm,
     PracticeSubmissionForm,
     PracticeTemplateForm,
 )
 from .models import (
     Enrollment,
     InstructorProfile,
+    MentoringRequest,
     PracticeAssignment,
+    PracticeJournal,
     PracticeSubmission,
 )
 
@@ -81,6 +87,9 @@ def instructor_studio(request: HttpRequest) -> HttpResponse:
         ).count(),
         "program_count": instructor.programs.count(),
         "templates": instructor.practice_templates.prefetch_related("linked_pages"),
+        "mentoring_requests": MentoringRequest.objects.filter(
+            offer__instructor=instructor, status=MentoringRequest.Status.REQUESTED
+        ).select_related("student", "offer"),
     }
     return _private(render(request, "mentoring/studio.html", context))
 
@@ -94,6 +103,61 @@ def create_practice_template(request: HttpRequest) -> HttpResponse:
         form.save_for(instructor=instructor)
         return redirect("mentoring:studio")
     return _private(render(request, "mentoring/template_form.html", {"form": form}))
+
+
+@login_required
+def create_offer(request: HttpRequest) -> HttpResponse:
+    assert isinstance(request.user, User)
+    instructor = get_object_or_404(InstructorProfile, user=request.user)
+    form = MentoringOfferForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        form.save_for(instructor=instructor)
+        return redirect("mentoring:studio")
+    return _private(render(request, "mentoring/offer_form.html", {"form": form}))
+
+
+@login_required
+def request_review(request: HttpRequest, slug: str) -> HttpResponse:
+    assert isinstance(request.user, User)
+    if request.user.adult_confirmed_at is None:
+        raise Http404
+    instructor = get_object_or_404(InstructorProfile, slug=slug, is_published=True)
+    if instructor.user_id == request.user.pk:
+        raise Http404
+    form = MentoringRequestForm(request.POST or None, instructor=instructor, student=request.user)
+    if request.method == "POST" and form.is_valid():
+        form.save_for(student=request.user)
+        return redirect("mentoring:student-dashboard")
+    return _private(
+        render(
+            request,
+            "mentoring/request_form.html",
+            {"form": form, "instructor": instructor},
+        )
+    )
+
+
+@login_required
+def accept_request(request: HttpRequest, pk: str) -> HttpResponse:
+    assert isinstance(request.user, User)
+    instructor = get_object_or_404(InstructorProfile, user=request.user)
+    mentoring_request = get_object_or_404(
+        MentoringRequest.objects.select_related("student", "offer"),
+        pk=pk,
+        offer__instructor=instructor,
+        status=MentoringRequest.Status.REQUESTED,
+    )
+    form = AcceptMentoringRequestForm(request.POST or None, instructor=instructor)
+    if request.method == "POST" and form.is_valid():
+        assignment = form.save(mentoring_request=mentoring_request)
+        return redirect("mentoring:assignment-detail", pk=assignment.pk)
+    return _private(
+        render(
+            request,
+            "mentoring/request_accept.html",
+            {"form": form, "mentoring_request": mentoring_request},
+        )
+    )
 
 
 @login_required
@@ -115,9 +179,37 @@ def student_dashboard(request: HttpRequest) -> HttpResponse:
         .select_related("template", "enrollment__instructor")
         .order_by("status", "due_at", "-assigned_at")
     )
-    return _private(
-        render(request, "mentoring/student_dashboard.html", {"assignments": assignments})
+    mentoring_requests = MentoringRequest.objects.filter(student=request.user).select_related(
+        "offer", "offer__instructor", "assignment"
     )
+    journal_entries = PracticeJournal.objects.filter(student=request.user).select_related("video")
+    return _private(
+        render(
+            request,
+            "mentoring/student_dashboard.html",
+            {
+                "assignments": assignments,
+                "mentoring_requests": mentoring_requests,
+                "journal_entries": journal_entries,
+            },
+        )
+    )
+
+
+@login_required
+def create_journal_entry(request: HttpRequest) -> HttpResponse:
+    assert isinstance(request.user, User)
+    if request.user.adult_confirmed_at is None:
+        raise Http404
+    form = PracticeJournalForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            form.save_for(student=request.user)
+        except ValidationError as exc:
+            form.add_error("video_url", exc)
+        else:
+            return redirect("mentoring:student-dashboard")
+    return _private(render(request, "mentoring/journal_form.html", {"form": form}))
 
 
 @login_required

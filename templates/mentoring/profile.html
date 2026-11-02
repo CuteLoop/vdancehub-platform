@@ -53,6 +53,9 @@
             {% else %}
               <p class="form-help">Booking link awaiting safety review.</p>
             {% endif %}
+            {% if offer.format == "video_review" and user.is_authenticated and user != profile.user %}
+              <a class="button secondary-button" href="{% url 'mentoring:request-review' profile.slug %}">Request one-time review</a>
+            {% endif %}
           </article>
         {% endif %}
       {% empty %}<p>This mentor has not published a service offer yet.</p>{% endfor %}

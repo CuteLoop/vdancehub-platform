@@ -151,6 +151,17 @@ button, .button { display: inline-block; margin-top: 1rem; padding: .7rem 1rem; 
 .annotation-list time { color: #6a2577; font-weight: 750; }
 .next-steps { margin-top: 1.2rem; border-radius: .7rem; padding: 1rem; background: #e9f5f0; }
 .review-composer form textarea { background: white; }
+.request-history { margin: 0 0 2.5rem; }
+.request-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; }
+.request-card { border-left: 4px solid #8d3d7a; border-radius: .8rem; padding: 1rem; background: #f9f4fa; }
+.request-card h3 { margin: .45rem 0; font-family: Georgia, serif; font-size: 1.35rem; }
+.request-focus { border-left: 4px solid #8d3d7a; padding: .5rem 1rem; background: #f9f4fa; }
+.status-accepted { color: #166252; background: #dff5ed; }
+.journal-section { margin: 0 0 2.5rem; }
+.journal-list { display: grid; gap: .7rem; }
+.journal-entry { display: grid; grid-template-columns: 7rem 1fr; gap: 1rem; border-bottom: 1px solid #e3d6e7; padding: .8rem 0; }
+.journal-entry time { color: #6a2577; font-weight: 750; }
+.journal-entry p { margin: .3rem 0; }
 @media (max-width: 38rem) {
   header, main, footer { padding: .85rem; }
   header nav { justify-content: flex-start; }
@@ -166,4 +177,5 @@ button, .button { display: inline-block; margin-top: 1rem; padding: .7rem 1rem; 
   .living-layout { grid-template-columns: 1fr; }
   .mentor-hero, .studio-heading, .assignment-hero, .review-row { display: block; }
   .mentor-profile-layout, .assignment-layout, .review-layout, .stat-grid { grid-template-columns: 1fr; }
+  .journal-entry { grid-template-columns: 1fr; }
 }

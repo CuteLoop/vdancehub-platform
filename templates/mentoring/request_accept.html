@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Accept review request · VDanceHub{% endblock %}
+{% block content %}
+  <section class="form-shell">
+    <p><a href="{% url 'mentoring:studio' %}">← Instructor Studio</a></p>
+    <p class="eyebrow">Review request from {{ mentoring_request.student.display_name }}</p>
+    <h1>{{ mentoring_request.offer.title }}</h1>
+    <div class="request-focus">{{ mentoring_request.focus|linebreaks }}</div>
+    <p>Choose the reusable exercise that will guide this submission. Accepting creates a private assignment for this dancer.</p>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Accept and create assignment</button></form>
+  </section>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Log practice · VDanceHub{% endblock %}
+{% block content %}
+  <section class="form-shell">
+    <p><a href="{% url 'mentoring:student-dashboard' %}">← My dance training</a></p>
+    <p class="eyebrow">Personal practice journal</p>
+    <h1>What did you practice?</h1>
+    <p>This entry belongs to your personal learning history. It is not automatically shared with an instructor.</p>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Save practice entry</button></form>
+  </section>
+{% endblock %}

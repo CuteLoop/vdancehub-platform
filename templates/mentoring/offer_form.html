@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}New mentoring offer · VDanceHub{% endblock %}
+{% block content %}
+  <section class="form-shell">
+    <p><a href="{% url 'mentoring:studio' %}">← Instructor Studio</a></p>
+    <p class="eyebrow">Mentoring service</p>
+    <h1>Publish an offer</h1>
+    <p>Set clear scope, turnaround time, and pricing. Your external booking link remains unclickable until a staff safety review.</p>
+    <div class="notice">VDanceHub records the coaching request and fulfillment status, but does not verify external payment.</div>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Publish offer</button></form>
+  </section>
+{% endblock %}

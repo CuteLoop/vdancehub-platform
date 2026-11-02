@@ -196,6 +196,56 @@ class PracticeAssignment(models.Model):
             )
 
 
+class MentoringRequest(models.Model):
+    class Status(models.TextChoices):
+        REQUESTED = "requested", "Requested"
+        ACCEPTED = "accepted", "Accepted"
+        DECLINED = "declined", "Declined"
+        CANCELED = "canceled", "Canceled"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    offer = models.ForeignKey(
+        MentoringOffer, on_delete=models.PROTECT, related_name="mentoring_requests"
+    )
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="mentoring_requests"
+    )
+    focus = models.TextField()
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.REQUESTED)
+    instructor_note = models.TextField(blank=True)
+    assignment = models.OneToOneField(
+        PracticeAssignment,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="mentoring_request",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["offer", "student"],
+                condition=models.Q(status="requested"),
+                name="unique_pending_student_offer_request",
+            )
+        ]
+
+    def clean(self) -> None:
+        if self.offer_id and self.student_id and self.offer.instructor.user_id == self.student_id:
+            raise ValidationError("Instructors cannot request their own mentoring offer.")
+        if self.assignment_id and self.offer_id:
+            assignment = self.assignment
+            if assignment is None:
+                raise ValidationError("The accepted request is missing its assignment.")
+            if assignment.enrollment.instructor_id != self.offer.instructor_id:
+                raise ValidationError("The assignment must belong to the requested instructor.")
+            if assignment.enrollment.student_id != self.student_id:
+                raise ValidationError("The assignment must belong to the requesting student.")
+
+
 class PracticeSubmission(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     assignment = models.OneToOneField(

@@ -5,7 +5,37 @@
     <p class="eyebrow">Private learning history</p>
     <h1>My dance training</h1>
     <p>Your assignments, submissions, and instructor feedback stay together—even as your training evolves.</p>
+    <a class="button secondary-button" href="{% url 'mentoring:journal-create' %}">Log personal practice</a>
   </section>
+  <section class="journal-section">
+    <div class="section-heading"><div><p class="eyebrow">Owned by you</p><h2>Practice journal</h2></div><a href="{% url 'mentoring:journal-create' %}">Add entry</a></div>
+    {% if journal_entries %}
+      <div class="journal-list">
+        {% for entry in journal_entries %}
+          <article class="journal-entry">
+            <time datetime="{{ entry.practice_date|date:'Y-m-d' }}">{{ entry.practice_date|date:"M j, Y" }}</time>
+            <div><strong>{{ entry.minutes }} minutes</strong><p>{{ entry.notes|linebreaksbr }}</p>{% if entry.video %}<a href="{{ entry.video.canonical_url }}" target="_blank" rel="noopener noreferrer nofollow">Open private video reference ↗</a>{% endif %}</div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}<div class="empty-state"><p>Log a session—even when it is not part of an instructor assignment.</p></div>{% endif %}
+  </section>
+  {% if mentoring_requests %}
+    <section class="request-history">
+      <div class="section-heading"><div><p class="eyebrow">Mentoring pipeline</p><h2>My review requests</h2></div></div>
+      <div class="request-grid">
+        {% for mentoring_request in mentoring_requests %}
+          <article class="request-card">
+            <div class="assignment-card-top"><span class="status-pill status-{{ mentoring_request.status }}">{{ mentoring_request.get_status_display }}</span><span>{{ mentoring_request.created_at|date:"M j, Y" }}</span></div>
+            <p class="eyebrow">{{ mentoring_request.offer.instructor.professional_name }}</p>
+            <h3>{{ mentoring_request.offer.title }}</h3>
+            <p>{{ mentoring_request.focus }}</p>
+            {% if mentoring_request.assignment %}<a class="text-link" href="{% url 'mentoring:assignment-detail' mentoring_request.assignment.pk %}">Open assignment →</a>{% else %}<small>Awaiting the instructor's response. External payment is not verified by VDanceHub.</small>{% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
   {% if assignments %}
     <div class="assignment-list">
       {% for assignment in assignments %}
