@@ -66,6 +66,18 @@ Then open `http://localhost:8000/knowledge/curricula/` or
 modular Casino/Rueda pathway distinct while allowing concepts to participate in one attributed,
 community-reviewable graph.
 
+To load a fictional end-to-end mentorship workflow, run:
+
+```bash
+.venv/bin/python manage.py seed_mentoring_demo \
+  --mentor-password '<temporary-demo-password>' \
+  --student-password '<temporary-demo-password>'
+```
+
+The idempotent seed creates clearly labeled demo mentors, offers, a program, assignments in each
+workflow state, submissions, timestamped feedback, a pending request, and a personal practice
+journal. Open `/mentoring/` for discovery, then use the two demo accounts printed by the command.
+
 ## Safety boundary
 
 The alpha is for adults aged 18 and over. Feedback videos are unlisted by default, but “unlisted”
